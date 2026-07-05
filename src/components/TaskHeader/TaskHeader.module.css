@@ -1,3 +1,4 @@
+@import '../../shared.css';
 .header {
   display: flex;
   align-items: center;
@@ -44,15 +45,6 @@
   border-radius: 999px;
   padding: 8px 12px;
   background: #fff;
-}
-
-.iconButton {
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #eef2f7;
-  color: #334155;
 }
 
 .signOutButton {

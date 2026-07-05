@@ -1,15 +1,24 @@
+@import '../../shared.css';
+
 .addForm {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
 }
 
-.input {
+.input, .textarea {
   flex: 1;
   padding: 12px 14px;
   border-radius: 999px;
   border: 1px solid #dbe0ea;
   background: #fff;
+  display: block;
+  flex: 1;
+}
+
+.textarea{
+  transition: opacity 200ms ease, transform 200ms ease;
 }
 
 .primaryButton {
@@ -19,4 +28,5 @@
   background: linear-gradient(135deg, #2d8f6f, #4f9d7f);
   color: white;
   font-weight: 600;
+  width: 100px;
 }

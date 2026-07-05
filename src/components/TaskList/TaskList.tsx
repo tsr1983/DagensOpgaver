@@ -1,33 +1,25 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 
-import styles from './TaskList.module.css';
-import { TodoItem } from '../../types';
+import styles from "./TaskList.module.css";
+import { TodoItem, ToDoItemDetails } from "../../types";
 
 interface TaskListProps {
   tasks: TodoItem[];
   loading: boolean;
   editingId: number | null;
   editingText: string;
+  editingDetails: string;
   onEditingTextChange: (value: string) => void;
+  onEditingDetailsChange: (value: string) => void;
   onToggleComplete: (task: TodoItem) => void;
   onStartEdit: (task: TodoItem) => void;
   onSaveEdit: (task: TodoItem) => void;
+  onCancelEdit: () => void;
   onDelete: (task: TodoItem) => void;
   onDragEnd: (sourceIndex: number, destinationIndex: number) => void;
 }
 
-export default function TaskList({
-  tasks,
-  loading,
-  editingId,
-  editingText,
-  onEditingTextChange,
-  onToggleComplete,
-  onStartEdit,
-  onSaveEdit,
-  onDelete,
-  onDragEnd,
-}: TaskListProps) {
+export default function TaskList({ tasks, loading, editingId, editingText, editingDetails, onEditingTextChange, onEditingDetailsChange, onToggleComplete, onStartEdit, onSaveEdit, onCancelEdit, onDelete, onDragEnd }: TaskListProps) {
   if (loading) {
     return <p className={styles.emptyState}>Loading tasks…</p>;
   }
@@ -44,16 +36,14 @@ export default function TaskList({
     dragIndexRef.current = index;
     setDraggingIndex(index);
     try {
-      e.dataTransfer.setData('text/plain', String(index));
+      e.dataTransfer.setData("text/plain", String(index));
     } catch {}
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = "move";
   };
-
-  
 
   const handleDropOnItem = (e: React.DragEvent, index: number) => {
     e.preventDefault();
-    const srcStr = e.dataTransfer.getData('text/plain');
+    const srcStr = e.dataTransfer.getData("text/plain");
     const src = srcStr ? parseInt(srcStr, 10) : dragIndexRef.current;
     if (src == null || Number.isNaN(src)) return;
 
@@ -71,7 +61,7 @@ export default function TaskList({
 
   const handleDropOnList = (e: React.DragEvent) => {
     e.preventDefault();
-    const srcStr = e.dataTransfer.getData('text/plain');
+    const srcStr = e.dataTransfer.getData("text/plain");
     const src = srcStr ? parseInt(srcStr, 10) : dragIndexRef.current;
     if (src == null || Number.isNaN(src)) return;
     // determine index based on pointer position relative to list children
@@ -99,7 +89,7 @@ export default function TaskList({
     const after = e.clientY > rect.top + rect.height / 2;
     const dest = after ? index + 1 : index;
     setDropIndex(dest);
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
   };
 
   const handleListDragOver = (e: React.DragEvent) => {
@@ -116,73 +106,116 @@ export default function TaskList({
       }
     }
     setDropIndex(dest);
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const showDetails = (task: TodoItem) => {
+    if (task.details) {
+      let parsed = JSON.parse(task.details) as ToDoItemDetails;
+      return <p className={styles.taskDetails}>{parsed.details}</p>;
+    }
+    return null;
+  };
+
+  const showTimestamp = (task: TodoItem) => {
+    if (task.updatedAt) {
+      return new Date(task.updatedAt).toLocaleString("da-DK", {    
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
   };
 
   return (
     <ul className={styles.taskList} onDragOver={handleListDragOver} onDrop={handleDropOnList}>
-            {tasks.map((task, index) => (
-              <React.Fragment key={`frag-${task.id}`}>
-                {dropIndex === index && (
-                  <li key={`placeholder-${index}`} className={`${styles.taskItem} ${styles.placeholder}`} />
+      {tasks.map((task, index) => (
+        <React.Fragment key={task.id}>
+          {dropIndex === index && (
+            <div className={`${styles.taskWrapper} ${styles.placeholderWrapper}`} key={`placeholder-wrapper-${index}`}>
+              <li key={`placeholder-${index}`} className={`${styles.taskItem} ${styles.placeholder}`} />
+              <div className={styles.taskDetailsPlaceholder} />
+            </div>
+          )}
+          <div className={styles.taskWrapper}>
+            <li
+              key={task.id}
+              className={`${styles.taskItem} ${task.completed ? styles.completed : ""} ${draggingIndex === index ? styles.dragging : ""}`}
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnd={() => {
+                dragIndexRef.current = null;
+                setDraggingIndex(null);
+                setDropIndex(null);
+              }}
+              onDragOver={(e) => handleItemDragOver(e, index)}
+              onDrop={(e) => handleDropOnItem(e, index)}
+            >
+              <div className={styles.taskTimestamp}>
+                opdateret {showTimestamp(task)}
+              </div>
+              <div className={styles.taskMain}>
+                <button className={styles.checkButton} onClick={() => onToggleComplete(task)} type="button" aria-label="Toggle complete">
+                  {task.completed ? "✓" : ""}
+                </button>
+                {editingId === task.id ? (
+                  <div className={styles.editContainer}>
+                    <input className={styles.editInput} value={editingText} onChange={(event) => onEditingTextChange(event.target.value)} autoFocus onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        onSaveEdit(task);
+                      }
+                    }} />
+                    <textarea className={styles.editDetails} value={editingDetails} onChange={(event) => onEditingDetailsChange(event.target.value)} placeholder="Add details..." onKeyDown={(event) => {
+                      if (event.key === "Enter" && event.ctrlKey) {
+                        onSaveEdit(task);
+                      }
+                    }} />
+                  </div>
+                ) : (
+                  <>
+                    <span className={styles.taskText}>{task.title}</span>
+                  </>
                 )}
-                <li
-                  key={task.id}
-                  className={`${styles.taskItem} ${task.completed ? styles.completed : ''} ${draggingIndex === index ? styles.dragging : ''}`}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragEnd={() => { dragIndexRef.current = null; setDraggingIndex(null); setDropIndex(null); }}
-                  onDragOver={(e) => handleItemDragOver(e, index)}
-                  onDrop={(e) => handleDropOnItem(e, index)}
-                >
-                <div className={styles.taskMain}>
-                      
-                      <button
-                        className={styles.checkButton}
-                        onClick={() => onToggleComplete(task)}
-                        type="button"
-                        aria-label="Toggle complete"
-                      >
-                        {task.completed ? '✓' : ''}
-                      </button>
-                      {editingId === task.id ? (
-                        <input
-                          className={styles.editInput}
-                          value={editingText}
-                          onChange={(event) => onEditingTextChange(event.target.value)}
-                          autoFocus
-                          onBlur={() => onSaveEdit(task)}
-                          onKeyDown={(event) => event.key === 'Enter' && onSaveEdit(task)}
-                        />
-                      ) : (
-                        <span className={styles.taskText}>{task.title}</span>
-                      )}
-                    </div>
-                    <div className={styles.taskActions}>
-                      <button
-                        className={styles.iconButton}
-                        onClick={() => onStartEdit(task)}
-                        type="button"
-                        aria-label="Edit task"
-                      >
-                        ✎
-                      </button>
-                      <button
-                        className={styles.iconButton}
-                        onClick={() => onDelete(task)}
-                        type="button"
-                        aria-label="Delete task"
-                      >
-                        ×
-                      </button>
-                     
-                    </div>
-                  </li>
-                  </React.Fragment>
-                ))}
-            {dropIndex === tasks.length && (
-              <li key={`placeholder-end`} className={`${styles.taskItem} ${styles.placeholder}`} />
-            )}
-          </ul>
+              </div>
+
+              <div className={styles.taskActions}>
+                {editingId === task.id ? (
+                  <>
+                    <button className={styles.iconButton} onClick={() => onSaveEdit(task)} type="button" aria-label="Save task" title="Save">
+                      ✓
+                    </button>
+                    <button className={styles.iconButton} onClick={() => onCancelEdit()} type="button" aria-label="Cancel edit" title="Cancel">
+                      ✕
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className={styles.iconButton} onClick={() => {
+                      const details = task.details ? JSON.parse(task.details).details : "";
+                      onEditingDetailsChange(details);
+                      onStartEdit(task);
+                    }} type="button" aria-label="Edit task" title="Edit">
+                      ✎
+                    </button>
+                    <button className={styles.iconButton} onClick={() => onDelete(task)} type="button" aria-label="Delete task" title="Delete">
+                      ×
+                    </button>
+                  </>
+                )}
+              </div>
+             
+            </li>
+            <div>
+              {showDetails(task)}
+            </div>
+          </div>
+        </React.Fragment>
+      ))}
+      {dropIndex === tasks.length && (
+        <div className={`${styles.taskWrapper} ${styles.placeholderWrapper}`} key={`placeholder-end-wrapper`}>
+          <li key={`placeholder-end`} className={`${styles.taskItem} ${styles.placeholder}`} />
+          <div className={styles.taskDetailsPlaceholder} />
+        </div>
+      )}
+    </ul>
   );
 }

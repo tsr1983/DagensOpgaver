@@ -1,3 +1,5 @@
+@import '../../shared.css';
+
 .taskList {
   list-style: none;
   padding: 0;
@@ -14,22 +16,39 @@
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
+ 
   background: #fff;
   user-select: none;
   -webkit-user-select: none;
 }
 
+.taskDetails{
+  pointer-events: none;
+}
+
+.taskWrapper{
+   padding: 22px 16px;
+  border-radius: 16px;
+  /* border: 1px solid #e2e8f0; */
+   box-shadow: 0 4px 5px rgba(11, 13, 9, 0.10);
+   position: relative;
+}
+
+.taskTimestamp{
+  position: absolute;
+  right: 15px;
+  font-size: 0.75rem;
+  top:0.1rem;
+}
+.placeholderWrapper {
+  padding: 0;
+  box-shadow: none;
+  border-radius: 16px;
+}
+
 .taskItem.dragging {
   opacity: 0.8;
   transform: translateZ(0) scale(0.998);
-  box-shadow: 0 8px 30px rgba(16,24,40,0.12);
-}
-
-.taskItem {
-  transition: margin 120ms ease, transform 120ms ease;
 }
 
 .placeholder {
@@ -37,6 +56,15 @@
   border: 2px dashed #e6eef6;
   background: rgba(230,238,246,0.6);
   box-sizing: border-box;
+  width: 100%;
+  border-radius: 16px;
+  display: block;
+  margin: 0;
+}
+
+.taskDetailsPlaceholder {
+  min-height: 18px;
+  margin-top: 8px;
 }
 
 .completed {
@@ -70,6 +98,24 @@
   border: 1px solid #dbe0ea;
   border-radius: 8px;
   padding: 8px 10px;
+}
+
+.editContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.editDetails {
+  flex: 1;
+  border: 1px solid #dbe0ea;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 80px;
 }
 
 .taskActions {

@@ -1,0 +1,8 @@
+.iconButton {
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eef2f7;
+  color: #334155;
+}

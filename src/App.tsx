@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import MagicLogin from './components/magic-login/MagicLogin';
 
 import { createTask, deleteTask, fetchTasks, reorderTasks, updateTask } from './api/tasks';
-import type { TodoItem } from './types';
+import type { TodoItem, ToDoItemDetails } from './types';
 import styles from './app.module.css';
 import TaskForm from './components/TaskForm/TaskForm';
 import TaskHeader from './components/TaskHeader/TaskHeader';
@@ -19,9 +19,9 @@ const authApiBaseUrl = 'https://minimalapi.thomasrasmussen.dk';
 export default function App() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [tasks, setTasks] = useState<TodoItem[]>([]);
-  const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingDetails, setEditingDetails] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,18 +58,21 @@ export default function App() {
     }
   };
 
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!draft.trim()) return;
+  const handleAddTask = async (title:string, details:ToDoItemDetails): Promise<boolean> => {
+    
+    if (!title.trim()) return false;
 
     try {
-      const created = await createTask({ title: draft.trim(), day: selectedDay });
+      const created = await createTask({ title: title.trim(), day: selectedDay, details: details ? JSON.stringify(details) : undefined });
       setTasks((current) => [...current, created]);
-      setDraft('');
+     
       setError(null);
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to add task');
+      return false;
     }
+    
   };
 
   const handleToggleComplete = async (task: TodoItem) => {
@@ -83,6 +86,7 @@ export default function App() {
 
   const handleSaveEdit = async (task: TodoItem) => {
     const nextTitle = editingText.trim();
+    const nextDetails = editingDetails.trim();
     if (!nextTitle) {
       setEditingId(null);
       setEditingText('');
@@ -90,14 +94,21 @@ export default function App() {
     }
 
     try {
-      const updated = await updateTask(task.id, { title: nextTitle });
+      const updated = await updateTask(task.id, { title: nextTitle, details: nextDetails ? JSON.stringify({ details: nextDetails }) : undefined });
       setTasks((current) => current.map((item) => (item.id === task.id ? updated : item)));
       setEditingId(null);
       setEditingText('');
+      setEditingDetails('');
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to update task');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingText('');
+    setEditingDetails('');
   };
 
   const handleDeleteTask = async (task: TodoItem) => {
@@ -162,7 +173,7 @@ export default function App() {
           onSignOut={handleSignOut}
         />
 
-        <TaskForm draft={draft} onDraftChange={setDraft} onSubmit={handleAddTask} />
+        <TaskForm onSubmit={handleAddTask} />
 
         {error && <p className={styles.error}>{error}</p>}
 
@@ -171,13 +182,16 @@ export default function App() {
           loading={loading}
           editingId={editingId}
           editingText={editingText}
+          editingDetails={editingDetails}
           onEditingTextChange={setEditingText}
+          onEditingDetailsChange={setEditingDetails}
           onToggleComplete={handleToggleComplete}
           onStartEdit={(task) => {
             setEditingId(task.id);
             setEditingText(task.title);
           }}
           onSaveEdit={handleSaveEdit}
+          onCancelEdit={handleCancelEdit}
           onDelete={handleDeleteTask}
           onDragEnd={handleReorder}
         />
