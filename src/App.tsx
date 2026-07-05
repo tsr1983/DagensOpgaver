@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import MagicLogin from './components/magic-login/MagicLogin';
-import TaskHeader from './components/TaskHeader';
-import TaskForm from './components/TaskForm';
-import TaskList from './components/TaskList';
+
 import { createTask, deleteTask, fetchTasks, reorderTasks, updateTask } from './api/tasks';
 import type { TodoItem } from './types';
 import styles from './app.module.css';
+import TaskForm from './components/TaskForm/TaskForm';
+import TaskHeader from './components/TaskHeader/TaskHeader';
+import TaskList from './components/TaskList/TaskList';
 
 const formatDateKey = (date: Date) => {
   const year = date.getFullYear();
@@ -153,6 +154,7 @@ export default function App() {
     <div className={styles.appShell}>
       <div className={styles.card}>
         <TaskHeader
+          tasks={tasks}
           selectedDate={selectedDate}
           onPrevious={() => setSelectedDate((current) => new Date(current.getFullYear(), current.getMonth(), current.getDate() - 1))}
           onNext={() => setSelectedDate((current) => new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1))}

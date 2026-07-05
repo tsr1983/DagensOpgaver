@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import type { TodoItem } from '../types';
+
 import styles from './TaskList.module.css';
+import { TodoItem } from '../../types';
 
 interface TaskListProps {
   tasks: TodoItem[];
@@ -32,7 +33,7 @@ export default function TaskList({
   }
 
   if (tasks.length === 0) {
-    return <p className={styles.emptyState}>No tasks for this day yet. Add the first one above.</p>;
+    return <p className={styles.emptyState}>Ingen opgaver i dag. Tilføj en ovenfor.</p>;
   }
 
   const dragIndexRef = useRef<number | null>(null);

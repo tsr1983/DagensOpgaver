@@ -1,3 +1,4 @@
+import { TodoItem } from '../../types';
 import styles from './TaskHeader.module.css';
 
 interface TaskHeaderProps {
@@ -6,6 +7,7 @@ interface TaskHeaderProps {
   onNext: () => void;
   onDateChange: (date: Date) => void;
   onSignOut: () => void;
+  tasks: TodoItem[];
 }
 
 function formatDisplayDate(date: Date) {
@@ -28,7 +30,7 @@ function parseDateInputValue(value: string) {
   return new Date(year, month - 1, day);
 }
 
-export default function TaskHeader({ selectedDate, onPrevious, onNext, onDateChange, onSignOut }: TaskHeaderProps) {
+export default function TaskHeader({ selectedDate, onPrevious, onNext, onDateChange, onSignOut, tasks }: TaskHeaderProps) {
   const selectedDay = formatDateInputValue(selectedDate);
 
   return (
@@ -59,7 +61,7 @@ export default function TaskHeader({ selectedDate, onPrevious, onNext, onDateCha
         </div>
       </header>
 
-      <p className={styles.subtleText}>Showing tasks for {formatDisplayDate(selectedDate)}</p>
+      <p className={styles.subtleText}>{tasks.length} opgaver for {formatDisplayDate(selectedDate)}</p>
     </>
   );
 }

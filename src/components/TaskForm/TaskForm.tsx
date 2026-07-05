@@ -11,12 +11,12 @@ export default function TaskForm({ draft, onDraftChange, onSubmit }: TaskFormPro
     <form className={styles.addForm} onSubmit={onSubmit}>
       <input
         className={styles.input}
-        placeholder="Add a new task"
+        placeholder="Tilføj opgave"
         value={draft}
         onChange={(event) => onDraftChange(event.target.value)}
       />
       <button className={styles.primaryButton} type="submit">
-        Add
+        Tilføj
       </button>
     </form>
   );
